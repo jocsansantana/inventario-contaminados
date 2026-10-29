@@ -1,0 +1,125 @@
+/* Variables de Color y Tema */
+:root {
+    --primary-color: #8C1D40;
+    --primary-hover: #6b1631;
+    --bg-light: #f4f6f9;
+    --card-radius: 14px;
+    --text-dark: #212529;
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-dark);
+    padding-bottom: 20px;
+}
+
+/* Tarjetas con bordes suaves estilo App Móvil */
+.custom-card {
+    border-radius: var(--card-radius);
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+}
+
+/* Encabezados y Botones Primarios */
+.bg-custom-primary {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+.btn-custom-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-custom-primary:hover,
+.btn-custom-primary:active {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* Optimizaciones para Formularios en Pantallas Táctiles */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: 1px solid #ced4da;
+    font-size: 16px !important;
+    /* Previene auto-zoom molesto en iOS */
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(140, 29, 64, 0.15);
+}
+
+/* Badges de Material */
+.badge-pe {
+    background-color: #0d6efd;
+    color: #fff;
+    font-weight: 600;
+}
+
+.badge-pp {
+    background-color: #6f42c1;
+    color: #fff;
+    font-weight: 600;
+}
+
+.badge-causa {
+    background-color: #ffc107;
+    color: #000;
+    font-weight: 600;
+}
+
+/* Indicador KPI de Peso */
+.card-kpi-peso {
+    border-left: 5px solid var(--primary-color) !important;
+}
+
+/* TARJETAS MÓVILES PARA BULTOS (Vista < 768px) */
+.bulto-mobile-card {
+    border-radius: var(--card-radius);
+    border-left: 5px solid var(--primary-color);
+    background: #ffffff;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.bulto-mobile-card .codigo-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.bulto-mobile-card .peso-highlight {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+/* Ajustes Responsive en Pantallas Pequeñas */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .kpi-title {
+        font-size: 0.75rem;
+    }
+
+    .kpi-value {
+        font-size: 1.35rem;
+    }
+}

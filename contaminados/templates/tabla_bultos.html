@@ -1,0 +1,308 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario de Materiales Contaminados</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --bs-burgundy: #800020;
+            --bs-burgundy-hover: #600018;
+        }
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .btn-custom-primary {
+            background-color: var(--bs-burgundy);
+            color: #ffffff;
+            border: none;
+        }
+        .btn-custom-primary:hover {
+            background-color: var(--bs-burgundy-hover);
+            color: #ffffff;
+        }
+        .badge-pe { background-color: #0d6efd; color: white; }
+        .badge-pp { background-color: #0dcaf0; color: #212529; }
+        .badge-causa { background-color: #ffc107; color: #212529; }
+        .kpi-card {
+            border-left: 4px solid var(--bs-burgundy);
+        }
+    </style>
+</head>
+<body class="py-4">
+    <div class="container">
+        
+        <!-- ENCABEZADO PRINCIPAL Y BOTÓN DE EXPORTACIÓN EXCEL -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <i class="bi bi-box-seam me-2 text-danger"></i> Contaminados
+                </h2>
+                <small class="text-muted">Control de mermas PE / PP</small>
+            </div>
+            <a href="{% url 'contaminados:exportar_excel' %}" class="btn btn-success fw-semibold shadow-sm d-flex align-items-center">
+                <i class="bi bi-file-earmark-excel me-2 fs-5"></i> Exportar XLSX
+            </a>
+        </div>
+
+        <!-- MENSAJES DE ALERTA -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm mb-4" role="alert">
+                    <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle-fill{% else %}bi-check-circle-fill{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- KPIS / INDICADORES -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm border-0 kpi-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Total Bultos Registrados</span>
+                            <h3 class="fw-bold mb-0 text-dark">{{ total_bultos }}</h3>
+                        </div>
+                        <div class="bg-light p-3 rounded-circle">
+                            <i class="bi bi-boxes fs-3 text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm border-0 kpi-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Peso Neto Acumulado</span>
+                            <h3 class="fw-bold mb-0 text-dark">{{ total_peso_neto|floatformat:2 }} <small class="fs-6 text-muted">kg</small></h3>
+                        </div>
+                        <div class="bg-light p-3 rounded-circle">
+                            <i class="bi bi-speedometer2 fs-3 text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMULARIO DE REGISTRO DE BULTOS -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <i class="bi bi-plus-circle-fill me-2 text-danger"></i> Registrar Bulto
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row g-2 g-md-3">
+                        <!-- FILA 1: Código, Tipo y Subtipo -->
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-qr-code me-1"></i> {{ form.codigo.label }}
+                            </label>
+                            {{ form.codigo }}
+                            {% if form.codigo.errors %}
+                                <div class="text-danger small mt-1">{{ form.codigo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-layers me-1"></i> {{ form.tipo_material.label }}
+                            </label>
+                            {{ form.tipo_material }}
+                            {% if form.tipo_material.errors %}
+                                <div class="text-danger small mt-1">{{ form.tipo_material.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-tags me-1"></i> {{ form.subtipo_material.label }}
+                            </label>
+                            {{ form.subtipo_material }}
+                            {% if form.subtipo_material.errors %}
+                                <div class="text-danger small mt-1">{{ form.subtipo_material.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- FILA 2: Causa y Peso Neto -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-exclamation-triangle me-1"></i> {{ form.causa_contaminacion.label }}
+                            </label>
+                            {{ form.causa_contaminacion }}
+                            {% if form.causa_contaminacion.errors %}
+                                <div class="text-danger small mt-1">{{ form.causa_contaminacion.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-speedometer2 me-1"></i> {{ form.peso_neto_kg.label }}
+                            </label>
+                            {{ form.peso_neto_kg }}
+                            {% if form.peso_neto_kg.errors %}
+                                <div class="text-danger small mt-1">{{ form.peso_neto_kg.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- FILA 3: Fuente de Origen (ANCHO COMPLETO - col-12) -->
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-geo-alt me-1"></i> {{ form.fuente_origen.label }}
+                            </label>
+                            {{ form.fuente_origen }}
+                            {% if form.fuente_origen.errors %}
+                                <div class="text-danger small mt-1">{{ form.fuente_origen.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- FILA 4: Observaciones (ANCHO COMPLETO - col-12) -->
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-chat-left-text me-1"></i> {{ form.observaciones.label }}
+                            </label>
+                            {{ form.observaciones }}
+                            {% if form.observaciones.errors %}
+                                <div class="text-danger small mt-1">{{ form.observaciones.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- BOTÓN GUARDAR REGISTRO -->
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-custom-primary w-100 py-2 fw-bold d-flex align-items-center justify-content-center shadow-sm">
+                                <i class="bi bi-save2 me-2"></i> Guardar Registro
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TABLA HISTORIAL Y TARJETAS MOVIL -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-list-task me-2 text-secondary"></i> Historial de Bultos
+                </h5>
+                <span class="badge bg-light text-dark border fw-normal">{{ bultos|length }} registro(s)</span>
+            </div>
+            <div class="card-body p-0">
+                
+                <!-- VISTA TABLA (ESCRITORIO) -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th class="text-center">Subtipo / Grado</th>
+                                <th class="text-center">Causa Contaminación</th>
+                                <th class="text-center">Fuente de Origen</th>
+                                <th class="text-end">Peso Neto (kg)</th>
+                                <th class="text-center">Fecha Registro</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bulto in bultos %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ bulto.codigo }}</td>
+                                <td>
+                                    {% if bulto.tipo_material == 'PE' %}
+                                        <span class="badge badge-pe px-2 py-1">{{ bulto.get_tipo_material_display }}</span>
+                                    {% else %}
+                                        <span class="badge badge-pp px-2 py-1">{{ bulto.get_tipo_material_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ bulto.get_subtipo_material_display }}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-causa">{{ bulto.get_causa_contaminacion_display }}</span>
+                                </td>
+                                <td class="text-center">{{ bulto.fuente_origen|default:"N/A" }}</td>
+                                <td class="text-end fw-bold fs-6">{{ bulto.peso_neto_kg }} kg</td>
+                                <td class="text-center text-muted small">{{ bulto.fecha_registro|date:"d/m/Y H:i" }}</td>
+                                
+                                <!-- BOTÓN DE ELIMINACIÓN -->
+                                <td class="text-center">
+                                    <form method="POST" action="{% url 'contaminados:eliminar_bulto' bulto.pk %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar el registro {{ bulto.codigo }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Eliminar registro">
+                                            <i class="bi bi-trash fs-5"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-1"></i> No hay bultos registrados actualmente.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- VISTA TARJETAS (MÓVIL) -->
+                <div class="d-md-none p-3">
+                    {% for bulto in bultos %}
+                    <div class="card mb-3 border shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold text-dark mb-0">{{ bulto.codigo }}</h6>
+                                <span class="fw-bold text-danger">{{ bulto.peso_neto_kg }} kg</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge badge-pe me-1">{{ bulto.get_tipo_material_display }}</span>
+                                <span class="badge bg-light text-dark border me-1">{{ bulto.get_subtipo_material_display }}</span>
+                                <span class="badge badge-causa">{{ bulto.get_causa_contaminacion_display }}</span>
+                            </div>
+                            <p class="small text-muted mb-1">
+                                <i class="bi bi-geo-alt me-1"></i> <strong>Origen:</strong> {{ bulto.fuente_origen|default:"N/A" }}
+                            </p>
+                            {% if bulto.observaciones %}
+                            <p class="small text-muted mb-1">
+                                <i class="bi bi-chat-left-text me-1"></i> <strong>Obs:</strong> {{ bulto.observaciones }}
+                            </p>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ bulto.fecha_registro|date:"d/m/Y H:i" }}</small>
+                                
+                                <form method="POST" action="{% url 'contaminados:eliminar_bulto' bulto.pk %}" class="d-inline" onsubmit="return confirm('¿Eliminar el bulto {{ bulto.codigo }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 py-0 px-2">
+                                        <i class="bi bi-trash me-1"></i>Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-1"></i> No hay bultos registrados.
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
